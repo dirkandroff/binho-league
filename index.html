@@ -88,6 +88,14 @@
       min-width: 0;
     }
 
+    .logo-home-button {
+      border: 0;
+      padding: 0;
+      color: inherit;
+      background: transparent;
+      text-align: left;
+    }
+
     .logo-icon {
       position: relative;
       display: grid;
@@ -487,6 +495,8 @@
 
     .generated-avatar img {
       object-fit: cover;
+      object-position: center;
+      transform: scale(1.12);
     }
 
     .podium-avatar {
@@ -1039,14 +1049,19 @@
 
   <div class="app">
     <header class="topbar">
-      <div class="logo">
+      <button
+        class="logo logo-home-button"
+        id="homeLogoButton"
+        type="button"
+        aria-label="Return to leaderboard"
+      >
         <div class="logo-icon">B</div>
 
         <div>
           <h1 class="logo-title">Binho League</h1>
           <div class="logo-subtitle">Live competition hub</div>
         </div>
-      </div>
+      </button>
 
       <button class="mobile-menu-button" id="mobileMenuButton" aria-label="Open navigation">
         ☰
@@ -1098,7 +1113,7 @@
                 </div>
 
                 <div class="summary-row">
-                  <span>Total prestige</span>
+                  <span>Total achievements</span>
                   <strong id="heroPrestige">--</strong>
                 </div>
               </div>
@@ -1200,7 +1215,7 @@
 
           <div class="stat-card">
             <div class="stat-icon">⭐</div>
-            <div class="stat-label">Most prestige</div>
+            <div class="stat-label">Top achievement</div>
             <div class="stat-value" id="statPrestigeLeader">--</div>
           </div>
 
@@ -1224,7 +1239,7 @@
           </div>
 
           <div class="panel list-panel">
-            <h3 class="list-title">Prestige Leaders</h3>
+            <h3 class="list-title">Achievement Leaders</h3>
             <div class="simple-list" id="prestigeLeaders"></div>
           </div>
         </div>
@@ -1242,7 +1257,7 @@
 
         <div class="split-grid">
           <div class="panel list-panel">
-            <h3 class="list-title">Prestige Ranking</h3>
+            <h3 class="list-title">Achievement Ranking</h3>
             <div class="simple-list" id="hallPrestige"></div>
           </div>
 
@@ -1256,7 +1271,7 @@
 
     <footer class="footer">
       Live data refreshes automatically every 15 seconds.
-      ⭐ represents one completed 20-win prestige.
+      ⭐ represents one completed 20 win prestige. 💎 starts at 100 estimated career wins.
     </footer>
   </div>
 
@@ -1281,6 +1296,7 @@
 
     const nav = document.getElementById('nav');
     const mobileMenuButton = document.getElementById('mobileMenuButton');
+    const homeLogoButton = document.getElementById('homeLogoButton');
     const playerModal = document.getElementById('playerModal');
     const modalClose = document.getElementById('modalClose');
     const modalContent = document.getElementById('modalContent');
@@ -1519,16 +1535,28 @@
 
     function normalizePlayer(row, index) {
       const rawName = String(row.player || '');
+      const name = cleanPlayerName(rawName);
       const wins = Number.parseInt(row.wins, 10) || 0;
       const prestige = countPrestige(rawName);
+      const estimatedCareerWins = wins + prestige * 20;
+      const diamonds =
+        estimatedCareerWins >= 100
+          ? Math.floor((estimatedCareerWins - 100) / 20) + 1
+          : 0;
+      const displayName =
+        diamonds > 0
+          ? `${name} ${'💎'.repeat(diamonds)}`
+          : rawName;
 
       return {
         rank: Number.parseInt(row.place, 10) || index + 1,
         rawName,
-        name: cleanPlayerName(rawName),
+        displayName,
+        name,
         wins,
         prestige,
-        estimatedCareerWins: wins + prestige * 20,
+        diamonds,
+        estimatedCareerWins,
         avatarId: String(row.avatarId || ''),
         avatarUrl: String(row.avatarUrl || '')
       };
@@ -1541,9 +1569,19 @@
       return '';
     }
 
-    function prestigeText(prestige) {
-      if (prestige === 0) return 'No prestige yet';
-      return `${prestige} prestige ${prestige === 1 ? 'star' : 'stars'}`;
+    function achievementText(player) {
+      if (player.diamonds > 0) {
+        return `${player.diamonds} ${player.diamonds === 1 ? 'diamond' : 'diamonds'}`;
+      }
+
+      if (player.prestige === 0) return 'No prestige yet';
+      return `${player.prestige} prestige ${player.prestige === 1 ? 'star' : 'stars'}`;
+    }
+
+    function achievementSymbols(player) {
+      if (player.diamonds > 0) return '💎'.repeat(player.diamonds);
+      if (player.prestige > 0) return '⭐'.repeat(player.prestige);
+      return 'No prestige';
     }
 
     function switchView(viewName) {
@@ -1572,35 +1610,39 @@
       nav.classList.toggle('open');
     });
 
-    async function loadLeagueData() {
-  try {
-    const response = await fetch('/api/leaderboard', {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json'
-      },
-      cache: 'no-store'
+    homeLogoButton.addEventListener('click', () => {
+      switchView('home');
     });
 
-    if (!response.ok) {
-      throw new Error(
-        `Leaderboard request failed with status ${response.status}.`
-      );
+    async function loadLeagueData() {
+      try {
+        const response = await fetch('/api/leaderboard', {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json'
+          },
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Leaderboard request failed with status ${response.status}.`
+          );
+        }
+
+        const data = await response.json();
+
+        if (!data || data.success !== true) {
+          throw new Error(
+            data?.error || 'The leaderboard API returned an invalid response.'
+          );
+        }
+
+        handleLeagueData(data);
+      } catch (error) {
+        handleError(error);
+      }
     }
-
-    const data = await response.json();
-
-    if (!data || data.success !== true) {
-      throw new Error(
-        data?.error || 'The leaderboard API returned an invalid response.'
-      );
-    }
-
-    handleLeagueData(data);
-  } catch (error) {
-    handleError(error);
-  }
-}
 
     function handleLeagueData(data) {
       appState.players = (data.players || []).map(normalizePlayer);
@@ -1643,11 +1685,14 @@
     function renderHero() {
       const players = appState.players;
       const totalWins = players.reduce((sum, player) => sum + player.wins, 0);
-      const totalPrestige = players.reduce((sum, player) => sum + player.prestige, 0);
+      const totalAchievements = players.reduce(
+        (sum, player) => sum + (player.diamonds > 0 ? player.diamonds : player.prestige),
+        0
+      );
 
       document.getElementById('heroPlayerCount').textContent = players.length;
       document.getElementById('heroTotalWins').textContent = totalWins;
-      document.getElementById('heroPrestige').textContent = totalPrestige;
+      document.getElementById('heroPrestige').textContent = totalAchievements;
 
       const updated = new Date(appState.updatedAt);
 
@@ -1688,7 +1733,7 @@
 
             ${avatarMarkup(player.name, player.avatarUrl, 'podium-avatar')}
 
-            <h3 class="podium-name">${escapeHtml(player.rawName)}</h3>
+            <h3 class="podium-name">${escapeHtml(player.displayName)}</h3>
 
             <div class="podium-wins">
               <strong>${player.wins}</strong> current wins
@@ -1723,8 +1768,8 @@
             ${avatarMarkup(player.name, player.avatarUrl)}
 
             <div class="player-info">
-              <div class="player-name">${escapeHtml(player.rawName)}</div>
-              <div class="player-prestige">${escapeHtml(prestigeText(player.prestige))}</div>
+              <div class="player-name">${escapeHtml(player.displayName)}</div>
+              <div class="player-prestige">${escapeHtml(achievementText(player))}</div>
             </div>
           </button>
 
@@ -1757,7 +1802,7 @@
             ${avatarMarkup(player.name, player.avatarUrl)}
 
             <div>
-              <h3 class="player-card-name">${escapeHtml(player.rawName)}</h3>
+              <h3 class="player-card-name">${escapeHtml(player.displayName)}</h3>
               <div class="player-card-rank">Current rank #${player.rank}</div>
             </div>
           </div>
@@ -1769,8 +1814,12 @@
             </div>
 
             <div class="mini-stat">
-              <div class="mini-stat-value">${player.prestige}</div>
-              <div class="mini-stat-label">Prestige</div>
+              <div class="mini-stat-value">
+                ${player.diamonds > 0 ? `${player.diamonds} 💎` : player.prestige}
+              </div>
+              <div class="mini-stat-label">
+                ${player.diamonds > 0 ? 'Diamonds' : 'Prestige'}
+              </div>
             </div>
           </div>
         </button>
@@ -1783,15 +1832,18 @@
 
       const totalWins = players.reduce((sum, player) => sum + player.wins, 0);
 
-      const prestigeSorted = [...players].sort(
-        (a, b) => b.prestige - a.prestige || b.wins - a.wins
+      const achievementSorted = [...players].sort(
+        (a, b) =>
+          b.diamonds - a.diamonds ||
+          b.prestige - a.prestige ||
+          b.wins - a.wins
       );
 
       document.getElementById('statLeader').textContent = players[0].name;
 
       document.getElementById('statPrestigeLeader').textContent =
-        prestigeSorted[0].prestige > 0
-          ? prestigeSorted[0].name
+        achievementSorted[0].diamonds > 0 || achievementSorted[0].prestige > 0
+          ? achievementSorted[0].name
           : 'None yet';
 
       document.getElementById('statTotalWins').textContent = totalWins;
@@ -1801,7 +1853,7 @@
         players.slice(0, 8).map(player => `
           <div class="simple-list-row">
             <span class="simple-list-name">
-              #${player.rank} ${escapeHtml(player.rawName)}
+              #${player.rank} ${escapeHtml(player.displayName)}
             </span>
 
             <span class="simple-list-value">
@@ -1811,16 +1863,14 @@
         `).join('');
 
       document.getElementById('prestigeLeaders').innerHTML =
-        prestigeSorted.slice(0, 8).map(player => `
+        achievementSorted.slice(0, 8).map(player => `
           <div class="simple-list-row">
             <span class="simple-list-name">
               ${escapeHtml(player.name)}
             </span>
 
             <span class="simple-list-value">
-              ${player.prestige > 0
-                ? '⭐'.repeat(player.prestige)
-                : 'No prestige'}
+              ${achievementSymbols(player)}
             </span>
           </div>
         `).join('');
@@ -1829,6 +1879,7 @@
     function renderHallOfFame() {
       const prestigeRanking = [...appState.players].sort(
         (a, b) =>
+          b.diamonds - a.diamonds ||
           b.prestige - a.prestige ||
           b.estimatedCareerWins - a.estimatedCareerWins
       );
@@ -1845,7 +1896,7 @@
             </span>
 
             <span class="simple-list-value">
-              ${player.prestige} ⭐
+              ${achievementSymbols(player)}
             </span>
           </div>
         `).join('');
@@ -1873,8 +1924,8 @@
           ${avatarMarkup(player.name, player.avatarUrl)}
 
           <div>
-            <h2 class="modal-name">${escapeHtml(player.rawName)}</h2>
-            <div class="modal-prestige">${escapeHtml(prestigeText(player.prestige))}</div>
+            <h2 class="modal-name">${escapeHtml(player.displayName)}</h2>
+            <div class="modal-prestige">${escapeHtml(achievementText(player))}</div>
           </div>
         </div>
 
@@ -1893,12 +1944,6 @@
             <div class="modal-stat-value">${player.estimatedCareerWins}</div>
             <div class="modal-stat-label">Estimated career wins</div>
           </div>
-        </div>
-
-        <div class="coming-soon">
-          Each avatar is generated from the player name, so it stays consistent
-          every time the site loads. Future versions can add custom profile photos,
-          match records, streaks, head-to-head results, and win percentage.
         </div>
       `;
 
