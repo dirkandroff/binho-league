@@ -1063,6 +1063,7 @@
       .modal-stats { grid-template-columns: 1fr; }
     }
   </style>
+  <link rel="stylesheet" href="/season2.css">
 </head>
 
 <body>
@@ -1093,6 +1094,8 @@
         <button class="nav-button" data-view="players">Players</button>
         <button class="nav-button" data-view="stats">Statistics</button>
         <button class="nav-button" data-view="hall">Hall of Fame</button>
+        <button class="nav-button" data-view="archive">Season 1</button>
+        <button class="nav-button" data-view="admin">Admin</button>
       </nav>
     </header>
 
@@ -1111,16 +1114,16 @@
             </h2>
 
             <p class="hero-description">
-              Current rankings are based strictly on active wins.
-              Prestige stars celebrate each completed 20-win run
-              without affecting leaderboard position.
+              Season 2 is live. Climb the board with every win.
+              At 51 wins, choose to prestige and start a fresh record.
+              Your achievements and season history stay with you.
             </p>
           </article>
 
           <aside class="hero-side">
             <div>
               <div class="season-label">Current competition</div>
-              <h3 class="season-title">Open League</h3>
+              <h3 class="season-title">Season 2</h3>
 
               <div class="live-summary">
                 <div class="summary-row">
@@ -1166,7 +1169,7 @@
           <div>
             <h2 class="section-title">Full Leaderboard</h2>
             <p class="section-description">
-              Rankings update automatically from Google Sheets
+              Most current wins leads. Fewer losses breaks a tie.
             </p>
           </div>
         </div>
@@ -1175,7 +1178,7 @@
           <div class="leaderboard-head">
             <div>Rank</div>
             <div>Player</div>
-            <div>Wins</div>
+            <div>Record</div>
           </div>
 
           <div id="leaderboard">
@@ -1288,11 +1291,52 @@
           </div>
         </div>
       </section>
+      <section class="view" id="view-archive">
+        <div class="section-header"><div><h2 class="section-title">Season 1 Archive</h2><p class="section-description">The final leaderboard, preserved before Season 2. Losses were not tracked.</p></div></div>
+        <div class="panel leaderboard-panel"><div class="leaderboard-head"><div>Rank</div><div>Player</div><div>Wins</div></div><div id="archiveLeaderboard"></div></div>
+      </section>
+      <section class="view" id="view-admin">
+        <div class="section-header"><div><h2 class="section-title">League Admin</h2><p class="section-description">Report a match. Keep the league moving.</p></div></div>
+        <div id="adminStatus" class="admin-status" role="status" aria-live="polite"></div>
+        <form id="adminLogin" class="panel admin-panel login-panel">
+          <h3>Admin sign in</h3><p>Use the shared league password. Your name labels the reports you submit.</p>
+          <label for="adminName">Your name</label><input id="adminName" name="adminName" autocomplete="nickname" required maxlength="40">
+          <label for="adminPassword">Admin password</label><input id="adminPassword" name="password" type="password" autocomplete="current-password" required maxlength="128">
+          <button class="action-button" type="submit">Sign in</button>
+        </form>
+        <div id="adminWorkspace" hidden>
+          <div class="admin-toolbar"><span id="adminGreeting"></span><button type="button" id="adminRefresh" class="quiet-button">Refresh</button><button type="button" id="adminLogout" class="quiet-button">Sign out</button></div>
+          <div class="split-grid">
+            <form id="matchForm" class="panel admin-panel">
+              <div class="eyebrow">Season 2</div><h3>Report a match</h3>
+              <label for="playerOne">Player one</label><select id="playerOne" required></select>
+              <label for="playerTwo">Player two</label><select id="playerTwo" required></select>
+              <label for="matchWinner">Who won?</label><select id="matchWinner" required><option value="">Select both players first</option></select>
+              <p id="matchSummary" class="form-hint">Choose two active players and the winner.</p>
+              <button class="action-button" type="submit">Save match report</button>
+            </form>
+            <form id="prestigeForm" class="panel admin-panel">
+              <div class="eyebrow">S2 🔥</div><h3>Prestige a player</h3><p>Available at 51 current wins. Season 1 prestige stays with the player.</p>
+              <label for="prestigePlayer">Eligible player</label><select id="prestigePlayer" required></select>
+              <label class="check-label"><input id="confirmPrestige" type="checkbox" required> Reset this player’s current wins and losses to zero and add one Season 2 prestige.</label>
+              <p class="form-hint">Full season totals and every match remain saved.</p><button class="action-button" type="submit">Award prestige and reset record</button>
+            </form>
+          </div>
+          <details class="panel admin-panel"><summary>Add or manage players</summary>
+            <div class="split-grid">
+              <form id="addPlayerForm"><h3>Add a player</h3><label for="newPlayerName">Player name</label><input id="newPlayerName" maxlength="60" required><label for="newAvatar">Avatar</label><select id="newAvatar"></select><img id="newAvatarPreview" class="avatar-preview" alt="Selected avatar" hidden><button class="action-button" type="submit">Add player</button></form>
+              <form id="managePlayerForm"><h3>Manage a player</h3><label for="managePlayer">Player</label><select id="managePlayer" required></select><label class="check-label"><input id="playerActive" type="checkbox"> Active this season</label><label for="manageAvatar">Avatar</label><select id="manageAvatar"></select><button class="action-button" type="submit">Save player</button></form>
+            </div>
+          </details>
+          <div class="panel admin-panel"><h3>Recent match reports</h3><p>Voiding a result removes it from the standings and preserves the report. Matches from before a player’s latest prestige require a history review.</p><div id="recentMatches"></div></div>
+        </div>
+      </section>
     </main>
 
     <footer class="footer">
       Live data refreshes automatically every 15 seconds.
-      ⭐ represents one completed 20 win prestige. 💎 starts at 100 estimated career wins.
+      S1 ⭐ preserves Season 1 prestige. S2 🔥 tracks Season 2 prestige.
+      Prestige becomes available at 51 current wins and resets current wins and losses. Full season totals remain saved.
     </footer>
   </div>
 
@@ -1310,7 +1354,8 @@
     const appState = {
       players: [],
       updatedAt: null,
-      refreshSeconds: 15
+      refreshSeconds: 15,
+      archive: []
     };
 
     let refreshTimer = null;
@@ -1555,32 +1600,15 @@
     }
 
     function normalizePlayer(row, index) {
-      const rawName = String(row.player || '');
-      const name = cleanPlayerName(rawName);
-      const wins = Number.parseInt(row.wins, 10) || 0;
-      const prestige = countPrestige(rawName);
-      const estimatedCareerWins = wins + prestige * 20;
-      const diamonds =
-        estimatedCareerWins >= 100
-          ? Math.floor((estimatedCareerWins - 100) / 20) + 1
-          : 0;
-      const displayName =
-        diamonds > 0
-          ? `${name} ${'💎'.repeat(diamonds)}`
-          : rawName;
-
-      return {
-        rank: Number.parseInt(row.place, 10) || index + 1,
-        rawName,
-        displayName,
-        name,
-        wins,
-        prestige,
-        diamonds,
-        estimatedCareerWins,
-        avatarId: String(row.avatarId || ''),
-        avatarUrl: String(row.avatarUrl || '')
-      };
+      const name = cleanPlayerName(row.player || '');
+      const prestige = Number(row.season1Prestige ?? countPrestige(row.player)) || 0;
+      return { ...row, id: String(row.id || index), rank: Number(row.place) || index + 1,
+        rawName: String(row.player || ''), displayName: name, name,
+        wins: Number(row.wins) || 0, losses: Number(row.losses) || 0,
+        seasonWins: Number(row.seasonWins) || 0, seasonLosses: Number(row.seasonLosses) || 0,
+        prestige, season2Prestige: Number(row.season2Prestige) || 0, diamonds: 0,
+        estimatedCareerWins: prestige * 20 + (Number(row.legacyWins) || 0) + (Number(row.seasonWins) || 0),
+        avatarId: String(row.avatarId || ''), avatarUrl: String(row.avatarUrl || '') };
     }
 
     function rankClass(rank) {
@@ -1591,19 +1619,9 @@
     }
 
     function achievementText(player) {
-      if (player.diamonds > 0) {
-        return `${player.diamonds} ${player.diamonds === 1 ? 'diamond' : 'diamonds'}`;
-      }
-
-      if (player.prestige === 0) return 'No prestige yet';
-      return `${player.prestige} prestige ${player.prestige === 1 ? 'star' : 'stars'}`;
+      return `S1 ⭐ × ${player.prestige}   S2 🔥 × ${player.season2Prestige}`;
     }
-
-    function achievementSymbols(player) {
-      if (player.diamonds > 0) return '💎'.repeat(player.diamonds);
-      if (player.prestige > 0) return '⭐'.repeat(player.prestige);
-      return 'No prestige';
-    }
+    function achievementSymbols(player) { return achievementText(player); }
 
     function switchView(viewName) {
       document.querySelectorAll('.view').forEach(view => {
@@ -1667,6 +1685,7 @@
 
     function handleLeagueData(data) {
       appState.players = (data.players || []).map(normalizePlayer);
+      appState.archive = data.archive || [];
       appState.updatedAt = data.updatedAt;
       appState.refreshSeconds = Number(data.refreshSeconds) || 15;
 
@@ -1701,13 +1720,14 @@
       renderPlayers(appState.players);
       renderStatistics();
       renderHallOfFame();
+      if (typeof renderArchive === 'function') renderArchive();
     }
 
     function renderHero() {
       const players = appState.players;
       const totalWins = players.reduce((sum, player) => sum + player.wins, 0);
       const totalAchievements = players.reduce(
-        (sum, player) => sum + (player.diamonds > 0 ? player.diamonds : player.prestige),
+        (sum, player) => sum + (player.prestige + player.season2Prestige),
         0
       );
 
@@ -1723,7 +1743,11 @@
 
     function renderPodium() {
       const podium = document.getElementById('podium');
-      const topThree = appState.players.slice(0, 3);
+      const topThree = appState.players.filter(p => p.seasonWins + p.seasonLosses > 0).slice(0, 3);
+      if (!topThree.length) {
+        podium.innerHTML = '<div class="panel season-start"><span>🏆</span><h3>A fresh season. A wide open podium.</h3><p>The first reported matches will set the pace.</p></div>';
+        return;
+      }
 
       if (!topThree.length) {
         podium.innerHTML = `
@@ -1755,9 +1779,10 @@
             ${avatarMarkup(player.name, player.avatarUrl, 'podium-avatar')}
 
             <h3 class="podium-name">${escapeHtml(player.displayName)}</h3>
+            <div class="player-prestige">${escapeHtml(achievementText(player))}</div>
 
             <div class="podium-wins">
-              <strong>${player.wins}</strong> current wins
+              <strong>${player.wins}</strong> W <span class="record-divider">/</span> <strong>${player.losses}</strong> L
             </div>
           </button>
         `;
@@ -1794,10 +1819,7 @@
             </div>
           </button>
 
-          <div class="wins-number">
-            ${player.wins}
-            <span class="wins-label">Wins</span>
-          </div>
+          <div class="record"><div><strong>${player.wins}</strong><span>W</span></div><div><strong>${player.losses}</strong><span>L</span></div></div>
         </div>
       `).join('');
     }
@@ -1825,6 +1847,7 @@
             <div>
               <h3 class="player-card-name">${escapeHtml(player.displayName)}</h3>
               <div class="player-card-rank">Current rank #${player.rank}</div>
+              <div class="player-prestige">${escapeHtml(achievementText(player))}</div>
             </div>
           </div>
 
@@ -1836,10 +1859,10 @@
 
             <div class="mini-stat">
               <div class="mini-stat-value">
-                ${player.diamonds > 0 ? `${player.diamonds} 💎` : player.prestige}
+                ${player.losses}
               </div>
               <div class="mini-stat-label">
-                ${player.diamonds > 0 ? 'Diamonds' : 'Prestige'}
+                Current losses
               </div>
             </div>
           </div>
@@ -1855,15 +1878,15 @@
 
       const achievementSorted = [...players].sort(
         (a, b) =>
-          b.diamonds - a.diamonds ||
+          b.season2Prestige - a.season2Prestige ||
           b.prestige - a.prestige ||
           b.wins - a.wins
       );
 
-      document.getElementById('statLeader').textContent = players[0].name;
+      document.getElementById('statLeader').textContent = players.some(p => p.seasonWins > 0) ? players[0].name : 'Open';
 
       document.getElementById('statPrestigeLeader').textContent =
-        achievementSorted[0].diamonds > 0 || achievementSorted[0].prestige > 0
+        achievementSorted[0].season2Prestige > 0 || achievementSorted[0].prestige > 0
           ? achievementSorted[0].name
           : 'None yet';
 
@@ -1878,7 +1901,7 @@
             </span>
 
             <span class="simple-list-value">
-              ${player.wins} wins
+              ${player.wins} W / ${player.losses} L
             </span>
           </div>
         `).join('');
@@ -1900,7 +1923,7 @@
     function renderHallOfFame() {
       const prestigeRanking = [...appState.players].sort(
         (a, b) =>
-          b.diamonds - a.diamonds ||
+          b.season2Prestige - a.season2Prestige ||
           b.prestige - a.prestige ||
           b.estimatedCareerWins - a.estimatedCareerWins
       );
@@ -1962,9 +1985,10 @@
           </div>
 
           <div class="modal-stat">
-            <div class="modal-stat-value">${player.estimatedCareerWins}</div>
-            <div class="modal-stat-label">Estimated career wins</div>
+            <div class="modal-stat-value">${player.losses}</div>
+            <div class="modal-stat-label">Current losses</div>
           </div>
+          <div class="modal-stat"><div class="modal-stat-value">${player.seasonWins} W / ${player.seasonLosses} L</div><div class="modal-stat-label">Full Season 2 record, including previous prestige runs</div></div>
         </div>
       `;
 
@@ -2005,5 +2029,6 @@
 
     loadLeagueData();
   </script>
+  <script src="/season2.js"></script>
 </body>
 </html>

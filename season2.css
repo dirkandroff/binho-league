@@ -1,0 +1,62 @@
+.nav { flex-wrap: wrap; }
+.player-button { min-width: 0; }
+.player-name { white-space: normal; overflow-wrap: anywhere; }
+.player-info { flex: 1; }
+.player-prestige { line-height: 1.7; white-space: normal; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.leaderboard-head, .leaderboard-row { grid-template-columns: 65px minmax(0, 1fr) 105px; }
+.record { display: flex; justify-content: flex-end; gap: 20px; font-variant-numeric: tabular-nums; }
+.record > div { display: grid; gap: 2px; text-align: center; min-width: 26px; }
+.record strong { font-size: 23px; line-height: 1.2; }
+.record span { color: var(--muted); font-size: 10px; }
+.record-divider { color: var(--muted); padding: 0 5px; }
+.season-start { grid-column: 1 / -1; text-align: center; padding: 30px 18px; }
+.season-start > span { font-size: 32px; }
+.season-start h3 { margin: 12px 0 8px; }
+.season-start p { color: var(--muted); line-height: 1.6; margin: 0; }
+.admin-panel { padding: 26px; margin-bottom: 20px; min-width: 0; }
+.admin-panel h3 { font-size: 21px; margin: 8px 0 14px; }
+.admin-panel p { color: var(--muted); line-height: 1.7; font-size: 14px; }
+.login-panel { max-width: 480px; margin: 0 auto; }
+.admin-panel label { display: block; font-size: 13px; font-weight: 700; margin: 20px 0 8px; }
+.admin-panel input:not([type=checkbox]), .admin-panel select { width: 100%; min-height: 48px; border: 1px solid rgba(255,255,255,.18); border-radius: 10px; background: #14141e; color: #fff; padding: 12px; font: inherit; font-size: 16px; }
+.admin-panel option { color: #fff; background: #14141e; }
+.admin-panel input:focus, .admin-panel select:focus { outline: 2px solid var(--blue, #3f92ff); outline-offset: 2px; }
+.action-button, .quiet-button, .void-button { cursor: pointer; font: inherit; border-radius: 10px; padding: 13px 18px; font-size: 14px; font-weight: 800; }
+.action-button { margin-top: 18px; width: 100%; color: white; border: 0; background: linear-gradient(110deg,#a52ad2,#225fd0); min-height: 48px; }
+.action-button:disabled { opacity: .5; cursor: wait; }
+.quiet-button, .void-button { color: #eee; background: transparent; border: 1px solid rgba(255,255,255,.2); }
+.quiet-button:hover, .void-button:hover { background: rgba(255,255,255,.07); }
+.admin-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 20px; }
+.admin-toolbar > span { flex: 1; color: var(--muted); }
+.admin-panel .check-label { display: flex; align-items: flex-start; gap: 10px; font-weight: 500; line-height: 1.6; }
+.check-label input { margin-top: 4px; width: 20px; height: 20px; flex: 0 0 auto; }
+.admin-status { padding: 0; margin-bottom: 18px; line-height: 1.6; }
+.admin-status:not(:empty) { padding: 14px 18px; border: 1px solid #4c8f83; background: rgba(60,180,150,.1); border-radius: 12px; }
+.admin-status.error { border-color: #dd7184; background: rgba(220,90,110,.1); }
+.admin-panel .form-hint { font-size: 13px; }
+.admin-panel summary { cursor: pointer; font-weight: 800; padding: 3px 0; }
+.admin-panel details[open] summary { margin-bottom: 20px; }
+.avatar-preview { display: block; width: 96px; height: 96px; margin: 16px 0; border-radius: 50%; }
+.match-history-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); padding: 16px 0; }
+.match-history-row > div { min-width: 0; }
+.match-history-row strong { overflow-wrap: anywhere; font-size: 14px; }
+.match-history-row small { display: block; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+.match-history-row.voided { opacity: .55; }
+.void-button { font-size: 12px; white-space: nowrap; flex-shrink: 0; padding: 10px 12px; }
+[hidden] { display: none !important; }
+@media (max-width: 560px) {
+  .leaderboard-head, .leaderboard-row { grid-template-columns: 34px minmax(0,1fr) 80px; padding: 12px 10px; gap: 7px; }
+  .rank-number { font-size: 13px; }
+  .player-button { gap: 8px; }
+  .player-avatar { flex: 0 0 34px; width: 34px; height: 34px; }
+  .player-name { font-size: 14px; }
+  .player-prestige { font-size: 10px; }
+  .record { gap: 11px; }
+  .record strong { font-size: 19px; }
+  .admin-panel { padding: 20px 16px; }
+  .match-history-row { align-items: flex-start; }
+  .modal-name { overflow-wrap: anywhere; }
+  .podium-name { white-space: normal; overflow-wrap: anywhere; }
+  .simple-list-value { flex-shrink: 0; text-align: right; white-space: normal; font-size: 11px; }
+  .simple-list-name { min-width: 0; }
+}
