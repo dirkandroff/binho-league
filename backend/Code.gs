@@ -125,11 +125,11 @@ function voidMatch_(body, session) {
 function formulas_(row) {
   return [
     '=IFNA(VLOOKUP(D'+row+',\'Avatar Bank\'!A:C,3,FALSE),"")',
-    '=COUNTIFS(\'Prestige Log\'!B$2:B,"S2",\'Prestige Log\'!C$2:C,A'+row+',\'Prestige Log\'!I$2:I,"Confirmed")',
-    '=COUNTIFS(\'Match Reports\'!B$2:B,"S2",\'Match Reports\'!D$2:D,A'+row+',\'Match Reports\'!H$2:H,G'+row+',\'Match Reports\'!J$2:J,"Confirmed")',
-    '=COUNTIFS(\'Match Reports\'!B$2:B,"S2",\'Match Reports\'!F$2:F,A'+row+',\'Match Reports\'!I$2:I,G'+row+',\'Match Reports\'!J$2:J,"Confirmed")',
-    '=COUNTIFS(\'Match Reports\'!B$2:B,"S2",\'Match Reports\'!D$2:D,A'+row+',\'Match Reports\'!J$2:J,"Confirmed")',
-    '=COUNTIFS(\'Match Reports\'!B$2:B,"S2",\'Match Reports\'!F$2:F,A'+row+',\'Match Reports\'!J$2:J,"Confirmed")',
+    '=COUNTIFS(\'Prestige Log\'!B:B,"S2",\'Prestige Log\'!C:C,A'+row+',\'Prestige Log\'!I:I,"Confirmed")',
+    '=COUNTIFS(\'Match Reports\'!B:B,"S2",\'Match Reports\'!D:D,A'+row+',\'Match Reports\'!H:H,G'+row+',\'Match Reports\'!J:J,"Confirmed")',
+    '=COUNTIFS(\'Match Reports\'!B:B,"S2",\'Match Reports\'!F:F,A'+row+',\'Match Reports\'!I:I,G'+row+',\'Match Reports\'!J:J,"Confirmed")',
+    '=COUNTIFS(\'Match Reports\'!B:B,"S2",\'Match Reports\'!D:D,A'+row+',\'Match Reports\'!J:J,"Confirmed")',
+    '=COUNTIFS(\'Match Reports\'!B:B,"S2",\'Match Reports\'!F:F,A'+row+',\'Match Reports\'!J:J,"Confirmed")',
     '=IFERROR(H'+row+'/(H'+row+'+I'+row+'),0)'
   ];
 }
